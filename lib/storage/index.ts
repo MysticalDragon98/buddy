@@ -17,8 +17,8 @@ export class Storage {
     }
     
     async init () {
-        await this.buddy.storage.mkdir("storage");
-        await this.buddy.storage.mkdir("storage/json");
+        await this.mkdir("storage");
+        await this.mkdir("storage/json");
 
         this.json = ElasticProxy.new({
             recursive: false,

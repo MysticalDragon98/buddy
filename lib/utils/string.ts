@@ -10,5 +10,9 @@ export class StringUtils {
     static escapeANSI (text: string) {
         return text.replace(ansiRegex, "")
     }
+    
+    static template (input: string, data: any) {
+        return input.replace(/\{\{\s*(.+?)\s*\}\}/g, ($0, $1) => data[$1.trim()]);
+    }
 
 }

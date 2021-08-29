@@ -5,12 +5,36 @@ const fss = require("fs");
 
 export class FileSystem {
 
+    static async readCSV (path: string, separator: string = ",") {
+        const data = await this.read(path);
+        const lines = data.split("\n");
+        const rows = [];
+        const headers = lines[0].trim().split(separator);
+
+        for (let i=1;i<lines.length;i++) {
+            const obj = {};
+            const columns = lines[i].trim().split(separator);
+
+            for (let j=0;j<columns.length;j++) {
+                obj[headers[j]] = columns[j];
+            }
+
+            rows.push(obj);
+        }
+
+        return rows;
+    }
+
     static async read (path: string) {
         return await fs.readFile(path, 'utf-8');
     }
 
-    static async write (path: string, data: string) {
+    static async write (path: string, data: string | Buffer) {
         return await fs.writeFile(path, data);
+    }
+
+    static async remove (path: string) {
+        return await fs.unlink(path);
     }
 
     static readSync (path: string) {

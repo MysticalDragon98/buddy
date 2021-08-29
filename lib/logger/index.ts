@@ -1,5 +1,5 @@
 import { Buddy } from "../..";
-import { customLog, log, sequencialColor, timestamp } from "termx";
+import { cold, customLog, highlight, log, sequencialColor, timestamp } from "termx";
 import { bold } from "chalk";
 import { ObjectUtils } from "../utils/object";
 import { StringUtils } from "../utils/string";
@@ -14,10 +14,13 @@ export interface LoggerOptions {
     enabled?: boolean;
     
     hidden?: LogDescriptor[];
+    
     pipe?: {
         name: string;
         filter: LogDescriptor
-    }[]
+    }[];
+
+    speak?: LogDescriptor[];
 }
 
 export function verboseLog (name: string) {
@@ -32,6 +35,7 @@ export class Logger {
         ObjectUtils.setDefault(options, 'enabled', true);
         ObjectUtils.setDefault(options, 'hide', []);
         ObjectUtils.setDefault(options, 'pipe', []);
+        ObjectUtils.setDefault(options, 'speak', []);
     }
 
     async init () {
@@ -42,7 +46,7 @@ export class Logger {
     log (_class: any, ...data: any) {
 
         {// Definitions
-            var name = _class.name;
+            var name = typeof _class == "string"? _class : _class.name;
             var log: LogDescriptor = {
                 class: name,
                 data
@@ -75,7 +79,12 @@ export class Logger {
                     }).join(" ") + "\n"
                 );
             }
+        }
 
+        {// Speak based on pipe
+            if (this.options.speak?.find(filter => this.matches(log, filter))) {
+                this.buddy.speak(data.toString());
+            }
         }
 
         this.verboseLogs[name](...data);
@@ -88,6 +97,18 @@ export class Logger {
 
     matchesAll (log: LogDescriptor, filter: LogDescriptor[]) {
         return filter.length == filter.filter(f => this.matches(log, f)).length;
+    }
+
+    async bm<T> (promise: Promise<T>, name: string) {
+        const now = Date.now();
+        if (name) this.buddy.log("LOGGER", "Benchmarking", highlight(name));
+        
+        const result = await promise;
+        const duration = Date.now() - now;
+
+        this.buddy.log("LOGGER", highlight(name), "finished after", cold(duration + "ms"));
+
+        return result;
     }
 
 }

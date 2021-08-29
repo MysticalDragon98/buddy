@@ -1,3 +1,5 @@
+import { sign, verify } from "jsonwebtoken";
+
 const crypto = require('crypto');
 
 const algorithm = 'aes-256-ctr';
@@ -61,6 +63,14 @@ export class Crypto {
 
     sha256 (data: any) {
         return sha256(data);
+    }
+
+    jwtSign (data: any) {
+        return sign(data, this.buddy.options.password);
+    }
+
+    jwtVerify (token: string) {
+        return verify(token, this.buddy.options.password);
     }
     
 }
